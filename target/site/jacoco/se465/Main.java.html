@@ -1,97 +1,273 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">project</a> &gt; <a href="index.source.html" class="el_package">se465</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package se465;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 <span class="fc" id="L7">public class Main {</span>
+<span class="fc" id="L8">  static String CONFIDENCE = &quot;--confidence&quot;;</span>
+<span class="fc" id="L9">  static String SUPPORT = &quot;--support&quot;;</span>
+<span class="fc" id="L10">  static String CALLGRAPH = &quot;--callgraph&quot;;</span>
+<span class="fc" id="L11">  static String OUTPUT = &quot;--output&quot;;</span>
   static HashMap&lt;String, String&gt; options;
+<span class="fc" id="L13">  static String callGraphStartWith = &quot;Call graph node for function:&quot;;</span>
+<span class="fc" id="L14">  static String funcCallStartWith = &quot;CS&lt;0x&quot;;</span>
+<span class="fc" id="L15">  static String splitter = &quot; &quot;;</span>
+<span class="fc" id="L16">  static HashMap&lt;String, Integer&gt; singleSupport = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L17">  static HashMap&lt;String, Integer&gt; pairSupport = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L18">  static HashMap&lt;String, ArrayList&lt;String&gt;&gt; callGraph = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L19">  static HashMap&lt;String, ArrayList&lt;String&gt;&gt; confidencePairs= new HashMap&lt;&gt;();</span>
   public static void main(String[] args) {
-<span class="nc" id="L10">      options = parse(args);</span>
+<span class="nc" id="L21">      options = commandParser(args);</span>
 
-<span class="nc bnc" id="L12" title="All 2 branches missed.">      for (Map.Entry&lt;String, String&gt; entry: options.entrySet()){</span>
-<span class="nc" id="L13">        System.out.println(&quot;key: &quot; + entry.getKey() + &quot; Val: &quot; + entry.getValue());</span>
-<span class="nc" id="L14">      }</span>
-<span class="nc" id="L15">  }</span>
+//      for (Map.Entry&lt;String, String&gt; entry: options.entrySet()){
+//        System.out.println(&quot;key: &quot; + entry.getKey() + &quot; Val: &quot; + entry.getValue());
+//      }
+
+<span class="nc" id="L27">    getSupports(options.get(CALLGRAPH));</span>
+<span class="nc" id="L28">    getConfidencePairs();</span>
+<span class="nc" id="L29">    inferBugs();</span>
+//    for (Map.Entry&lt;String, Integer&gt; entry: singleSupport.entrySet()){
+//      System.out.println(&quot;Single: &quot; + entry.getKey() + &quot; Val: &quot; + entry.getValue());
+//    }
+//
+//    for (Map.Entry&lt;String, Integer&gt; entry: pairSupport.entrySet()){
+//      System.out.println(&quot;Pair: &quot; + entry.getKey() + &quot; Val: &quot; + entry.getValue());
+//    }
+//
+//    for (Map.Entry&lt;String, ArrayList&lt;String&gt;&gt; entry: callGraph.entrySet()){
+//      System.out.println(&quot;Caller: &quot; + entry.getKey() + &quot; callee: &quot;);
+//      for (String callee: entry.getValue()){
+//        System.out.println(&quot;   &quot; + callee);
+//      }
+//    }
+//    for (Map.Entry&lt;String, ArrayList&lt;String&gt;&gt; entry: confidencePairs.entrySet()){
+//      for (String callee: entry.getValue()){
+//        System.out.println(&quot;Pair: &quot; + entry.getKey() + &quot;, &quot; + callee);
+//      }
+//    }
+<span class="nc" id="L49">  }</span>
 
   public int add(int a, int b) {
-<span class="fc" id="L18">    return a + b;</span>
+<span class="fc" id="L52">    return a + b;</span>
   }
 
-  static HashMap&lt;String, String&gt; parse(String[] args) {
-<span class="nc bnc" id="L22" title="All 2 branches missed.">    if(args.length &gt; 8) throw new IllegalArgumentException(&quot;erroneous flag&quot;);</span>
+  static void inferBugs(){
+    try {
+<span class="nc" id="L57">      OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(OUTPUT)), StandardCharsets.US_ASCII);</span>
+<span class="nc" id="L58">      BufferedWriter bw = new BufferedWriter(outputStreamWriter);</span>
+<span class="nc" id="L59">      String format = &quot;bug: %s in %s, pair: (%s, %s), support: %d, confidence: %.2f%%%n&quot;;</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">      for (Map.Entry&lt;String, ArrayList&lt;String&gt;&gt; entry : callGraph.entrySet()) {</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (String callee : entry.getValue()) {</span>
+<span class="nc" id="L62">          ArrayList&lt;String&gt; confidencePair = confidencePairs.getOrDefault(callee, null);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">          if (confidencePair != null) {</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            for (String pair : confidencePair) {</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">              if (!entry.getValue().contains(pair)) {</span>
+                //Should appear as a pair but did not
+<span class="nc" id="L67">                String[] pairArray = {callee, pair};</span>
+<span class="nc" id="L68">                Arrays.sort(pairArray);</span>
+<span class="nc" id="L69">                String confidenceKey = String.join(&quot; &quot;, pairArray[0], pairArray[1]);</span>
+//                System.out.printf((format) + &quot;%n&quot;, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey));
+<span class="nc" id="L71">                bw.write(String.format(format, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey)));</span>
+              }
+<span class="nc" id="L73">            }</span>
+          }
+<span class="nc" id="L75">        }</span>
+<span class="nc" id="L76">      }</span>
+<span class="nc" id="L77">      bw.close();</span>
+<span class="nc" id="L78">    }catch (IOException e){</span>
+<span class="nc" id="L79">      e.printStackTrace();</span>
+<span class="nc" id="L80">    }</span>
+<span class="nc" id="L81">  }</span>
 
-<span class="nc" id="L24">    HashMap&lt;String, String&gt; arguments = new HashMap&lt;&gt;();</span>
+
+  static void getConfidencePairs(){
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    for (Map.Entry&lt;String, Integer&gt; pairEntry: pairSupport.entrySet()){</span>
+<span class="nc" id="L86">      String[] funcPair = pairEntry.getKey().split(splitter);</span>
+<span class="nc" id="L87">      int T_CONFIDENCE = Integer.parseInt(options.get(CONFIDENCE));</span>
+<span class="nc" id="L88">      int T_SUPPORT = Integer.parseInt(options.get(SUPPORT));</span>
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">      for (int i=0; i&lt;2; i++){</span>
+//        System.out.println(&quot;func pair: &quot; + funcPair[0] + &quot;, &quot; + funcPair[1] + &quot; with cal confidence: &quot; + calculateConfidence(funcPair[i], pairEntry.getKey()) );
+<span class="nc bnc" id="L92" title="All 4 branches missed.">        if (pairSupport.get(pairEntry.getKey()) &gt;= T_SUPPORT &amp;&amp; calculateConfidence(funcPair[i], pairEntry.getKey()) &gt;= T_CONFIDENCE){</span>
+          //Only print bugs with confidence T_CONFIDENCE or more and with pair support T_SUPPORT times or more
+          //We confirm that func must always appear as a pair
+
+<span class="nc bnc" id="L96" title="All 2 branches missed.">          if (!confidencePairs.containsKey(funcPair[i])){</span>
+<span class="nc" id="L97">            confidencePairs.put(funcPair[i], new ArrayList&lt;&gt;());</span>
+          }
+
+<span class="nc" id="L100">          confidencePairs.get(funcPair[i]).add(funcPair[1-i]);</span>
+        }
+      }
+<span class="nc" id="L103">    }</span>
+
+<span class="nc" id="L105">  }</span>
+
+  static float calculateConfidence(String func, String pair){
+<span class="nc" id="L108">    int singleVal = singleSupport.get(func);</span>
+<span class="nc" id="L109">    int pairVal = pairSupport.get(pair);</span>
+//    float val = pairVal/singleVal;
+<span class="nc" id="L111">    return pairVal * 100/ (float) singleVal;</span>
+  }
+
+  static void getSupportsForOneFuncCall(HashSet&lt;String&gt; functionsCalled){
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (functionsCalled == null) return;</span>
+
+    //Add support for one single function
+<span class="nc bnc" id="L118" title="All 2 branches missed.">    for (String func: functionsCalled){</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">      if (!singleSupport.containsKey(func)){</span>
+<span class="nc" id="L120">        singleSupport.put(func, 1);</span>
+      } else {
+<span class="nc" id="L122">        int val = singleSupport.get(func);</span>
+<span class="nc" id="L123">        singleSupport.put(func, val+1);</span>
+      }
+<span class="nc" id="L125">    }</span>
+    //Add support for every pair
+
+<span class="nc" id="L128">    ArrayList&lt;String&gt; funcList = new ArrayList&lt;&gt;(functionsCalled);</span>
+<span class="nc" id="L129">    Collections.sort(funcList);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">    for (int i = 0; i &lt; funcList.size() - 1; i++){</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">      for (int j = i+1; j &lt; funcList.size(); j++){</span>
+        //Now sorted, the pair should be good
+<span class="nc" id="L133">        String pair = funcList.get(i) + splitter + funcList.get(j);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (!pairSupport.containsKey(pair)){</span>
+<span class="nc" id="L135">          pairSupport.put(pair, 1);</span>
+        } else {
+<span class="nc" id="L137">          int val = pairSupport.get(pair);</span>
+<span class="nc" id="L138">          pairSupport.put(pair, val+1);</span>
+        }
+      }
+    }
+<span class="nc" id="L142">  }</span>
+
+  static void getSupports(String fileName) {
+    try{
+<span class="nc" id="L146">      InputStreamReader isr = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8);</span>
+<span class="nc" id="L147">      BufferedReader br = new BufferedReader(isr);</span>
+<span class="nc" id="L148">      HashSet&lt;String&gt; functionCall = null;</span>
+<span class="nc" id="L149">      String caller = null;</span>
+<span class="nc bnc" id="L150" title="All 2 branches missed.">      for (String line; (line = br.readLine()) != null;){</span>
+        //We are trying to get the function name
+<span class="nc" id="L152">        String[] lineSplit = line.split(&quot;'&quot;);</span>
+        //The second element should always be the function name
+<span class="nc" id="L154">        String funcName = null;</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (lineSplit.length &gt;= 2){</span>
+<span class="nc" id="L156">          funcName = lineSplit[1];</span>
+        }
+
+
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (line.startsWith(callGraphStartWith)) {</span>
+          //Process the previous function call
+<span class="nc" id="L162">          getSupportsForOneFuncCall(functionCall);</span>
+          //Assign caller and create the callGraph
+<span class="nc bnc" id="L164" title="All 2 branches missed.">          if (caller != null){</span>
+<span class="nc" id="L165">            ArrayList&lt;String&gt; callees = new ArrayList&lt;&gt;(functionCall);</span>
+<span class="nc" id="L166">            callGraph.put(caller, callees);</span>
+          }
+<span class="nc" id="L168">          caller = funcName;</span>
+
+          //Indicates a call graph for one function.
+<span class="nc" id="L171">          functionCall = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L173">          continue;</span>
+        }
+
+<span class="nc bnc" id="L176" title="All 4 branches missed.">        if (functionCall != null &amp;&amp; funcName != null){</span>
+          //Now we should be at the first line of the function call graph
+          //The second element should always be the function name
+<span class="nc" id="L179">          functionCall.add(funcName);</span>
+        }
+<span class="nc" id="L181">      }</span>
+
+      //Last function call not captured by the for loop
+<span class="nc" id="L184">      getSupportsForOneFuncCall(functionCall);</span>
+      //Assign caller and create the callGraph
+<span class="nc bnc" id="L186" title="All 2 branches missed.">      if (caller != null){</span>
+<span class="nc" id="L187">        ArrayList&lt;String&gt; callees = new ArrayList&lt;&gt;(functionCall);</span>
+<span class="nc" id="L188">        callGraph.put(caller, callees);</span>
+      }
+<span class="nc" id="L190">      br.close();</span>
+
+<span class="nc" id="L192">    } catch (IOException e) {</span>
+<span class="nc" id="L193">      e.printStackTrace();</span>
+<span class="nc" id="L194">    }</span>
+<span class="nc" id="L195">  }</span>
+
+  static HashMap&lt;String, String&gt; commandParser(String[] args) {
+<span class="nc bnc" id="L198" title="All 2 branches missed.">    if(args.length &gt; 8) throw new IllegalArgumentException(&quot;erroneous flag&quot;);</span>
+
+<span class="nc" id="L200">    HashMap&lt;String, String&gt; arguments = new HashMap&lt;&gt;();</span>
     // Put default values
-<span class="nc" id="L26">    arguments.put(&quot;--support&quot;, null);</span>
-<span class="nc" id="L27">    arguments.put(&quot;--confidence&quot;, null);</span>
-<span class="nc" id="L28">    arguments.put(&quot;--callgraph&quot;, null);</span>
-<span class="nc" id="L29">    arguments.put(&quot;--output&quot;, null);</span>
+<span class="nc" id="L202">    arguments.put(SUPPORT, null);</span>
+<span class="nc" id="L203">    arguments.put(CONFIDENCE, null);</span>
+<span class="nc" id="L204">    arguments.put(CALLGRAPH, null);</span>
+<span class="nc" id="L205">    arguments.put(OUTPUT, null);</span>
 
-<span class="nc bnc" id="L31" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">    for (int i = 0; i &lt; args.length; i++) {</span>
       //In our program, we always assume it is an argument-value pair.
-<span class="nc" id="L33">      String arg = args[i];</span>
+<span class="nc" id="L209">      String arg = args[i];</span>
       //Update index here to make sure we always have i points to an argument at the beginning of the loop
-<span class="nc" id="L35">      String value = args[++i];</span>
+<span class="nc" id="L211">      String value = args[++i];</span>
 
       //First, check if it is a valid argument
-<span class="nc bnc" id="L38" title="All 2 branches missed.">      if (!arguments.containsKey(arg)) {</span>
-<span class="nc" id="L39">        throw new IllegalArgumentException(&quot;erroneous flags&quot;);</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">      if (!arguments.containsKey(arg)) {</span>
+<span class="nc" id="L215">        throw new IllegalArgumentException(&quot;erroneous flags&quot;);</span>
       }
 
       //Second, check if it is duplicated
-<span class="nc bnc" id="L43" title="All 2 branches missed.">      if (arguments.get(arg) != null) {</span>
-<span class="nc" id="L44">        throw new IllegalArgumentException(&quot;duplicate flags&quot;);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">      if (arguments.get(arg) != null) {</span>
+<span class="nc" id="L220">        throw new IllegalArgumentException(&quot;duplicate flags&quot;);</span>
       }
 
       //Third, we need to check the value. The type of values depends on which argument it is
-<span class="nc bnc" id="L48" title="All 5 branches missed.">      switch (arg) {</span>
+<span class="nc bnc" id="L224" title="All 5 branches missed.">      switch (arg) {</span>
         case &quot;--support&quot;:
           //Positive 32-bit signed integer
           int t_support;
           try {
-<span class="nc" id="L53">            t_support = Integer.parseInt(value);</span>
-<span class="nc" id="L54">          } catch (NumberFormatException e) {</span>
-<span class="nc" id="L55">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
-<span class="nc" id="L56">          }</span>
-<span class="nc bnc" id="L57" title="All 2 branches missed.">          if (t_support &lt;= 0) throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L229">            t_support = Integer.parseInt(value);</span>
+<span class="nc" id="L230">          } catch (NumberFormatException e) {</span>
+<span class="nc" id="L231">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L232">          }</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">          if (t_support &lt;= 0) throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
           break;
         case &quot;--confidence&quot;:
           //An integer between 0 and 100 (inclusive) to specify t_confidence;
           int t_confidence;
           try {
-<span class="nc" id="L63">            t_confidence = Integer.parseInt(value);</span>
-<span class="nc" id="L64">          } catch (NumberFormatException e) {</span>
-<span class="nc" id="L65">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
-<span class="nc" id="L66">          }</span>
-<span class="nc bnc" id="L67" title="All 4 branches missed.">          if (t_confidence &lt; 0 || t_confidence &gt; 100) throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L239">            t_confidence = Integer.parseInt(value);</span>
+<span class="nc" id="L240">          } catch (NumberFormatException e) {</span>
+<span class="nc" id="L241">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L242">          }</span>
+<span class="nc bnc" id="L243" title="All 4 branches missed.">          if (t_confidence &lt; 0 || t_confidence &gt; 100) throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
           break;
         case &quot;--callgraph&quot;:
           //the file of the call graph, produced by LLVM opt
-<span class="nc" id="L71">          File callgraph = new File(value);</span>
-<span class="nc bnc" id="L72" title="All 6 branches missed.">          if (!callgraph.exists() || callgraph.isDirectory() || !callgraph.canRead()) {</span>
-<span class="nc" id="L73">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L247">          File callgraph = new File(value);</span>
+<span class="nc bnc" id="L248" title="All 6 branches missed.">          if (!callgraph.exists() || callgraph.isDirectory() || !callgraph.canRead()) {</span>
+<span class="nc" id="L249">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
           }
           break;
         case &quot;--output&quot;:
           //the file to save the result
-<span class="nc" id="L78">          File output = new File(value);</span>
-<span class="nc bnc" id="L79" title="All 6 branches missed.">          if (output.isDirectory() || output.exists() &amp;&amp; !output.canWrite()) {</span>
-<span class="nc" id="L80">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
+<span class="nc" id="L254">          File output = new File(value);</span>
+<span class="nc bnc" id="L255" title="All 6 branches missed.">          if (output.isDirectory() || output.exists() &amp;&amp; !output.canWrite()) {</span>
+<span class="nc" id="L256">            throw new IllegalArgumentException(&quot;invalid value&quot;);</span>
           }
           break;
       }
 
       //put the value in map
-<span class="nc" id="L86">      arguments.put(arg, value);</span>
+<span class="nc" id="L262">      arguments.put(arg, value);</span>
     }
 
     //Finally check if we missed any flags
-<span class="nc bnc" id="L90" title="All 2 branches missed.">    for (String val: arguments.values()){</span>
-<span class="nc bnc" id="L91" title="All 2 branches missed.">      if (val == null) throw new IllegalArgumentException(&quot;missing flags&quot;);</span>
-<span class="nc" id="L92">    }</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">    for (String val: arguments.values()){</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">      if (val == null) throw new IllegalArgumentException(&quot;missing flags&quot;);</span>
+<span class="nc" id="L268">    }</span>
 
-<span class="nc" id="L94">    return arguments;</span>
+<span class="nc" id="L270">    return arguments;</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
