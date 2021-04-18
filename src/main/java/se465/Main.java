@@ -15,8 +15,8 @@ public class Main {
   static String splitter = " ";
   static HashMap<String, Integer> singleSupport = new HashMap<>();
   static HashMap<String, Integer> pairSupport = new HashMap<>();
-  static HashMap<String, ArrayList<String>> callGraph = new HashMap<>();
-  static HashMap<String, ArrayList<String>> confidencePairs= new HashMap<>();
+  static HashMap<String, HashSet<String>> callGraph = new HashMap<>();
+  static HashMap<String, HashSet<String>> confidencePairs= new HashMap<>();
   public static void main(String[] args) {
       options = commandParser(args);
 
@@ -53,9 +53,9 @@ public class Main {
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(OUTPUT)), StandardCharsets.US_ASCII);
       BufferedWriter bw = new BufferedWriter(outputStreamWriter);
       String format = "bug: %s in %s, pair: (%s, %s), support: %d, confidence: %.2f%%%n";
-      for (Map.Entry<String, ArrayList<String>> entry : callGraph.entrySet()) {
+      for (Map.Entry<String, HashSet<String>> entry : callGraph.entrySet()) {
         for (String callee : entry.getValue()) {
-          ArrayList<String> confidencePair = confidencePairs.getOrDefault(callee, null);
+          HashSet<String> confidencePair = confidencePairs.getOrDefault(callee, null);
           if (confidencePair != null) {
             for (String pair : confidencePair) {
               if (!entry.getValue().contains(pair)) {
@@ -90,7 +90,7 @@ public class Main {
           //We confirm that func must always appear as a pair
 
           if (!confidencePairs.containsKey(funcPair[i])){
-            confidencePairs.put(funcPair[i], new ArrayList<>());
+            confidencePairs.put(funcPair[i], new HashSet<>());
           }
 
           confidencePairs.get(funcPair[i]).add(funcPair[1-i]);
@@ -158,8 +158,8 @@ public class Main {
           getSupportsForOneFuncCall(functionCall);
           //Assign caller and create the callGraph
           if (caller != null){
-            ArrayList<String> callees = new ArrayList<>(functionCall);
-            callGraph.put(caller, callees);
+//            ArrayList<String> callees = new ArrayList<>(functionCall);
+            callGraph.put(caller, functionCall);
           }
           caller = funcName;
 
@@ -180,8 +180,8 @@ public class Main {
       getSupportsForOneFuncCall(functionCall);
       //Assign caller and create the callGraph
       if (caller != null){
-        ArrayList<String> callees = new ArrayList<>(functionCall);
-        callGraph.put(caller, callees);
+//        ArrayList<String> callees = new ArrayList<>(functionCall);
+        callGraph.put(caller, functionCall);
       }
       br.close();
 
