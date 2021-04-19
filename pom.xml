@@ -53,6 +53,7 @@
         <configuration>
           <targetClasses>
             <param>se465.Main</param>
+            <param>se465.Pair</param>
           </targetClasses>
           <targetTests>
             <param>se465.MainTest</param>
