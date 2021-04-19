@@ -6,14 +6,14 @@ import java.util.*;
 
 public class BugDetector {
     //Now we try to manually give an ID to each string to increase performance
-    HashMap<Integer, Integer> singleSupport = new HashMap<>();
-    HashMap<Pair, Integer> pairSupport = new HashMap<>();
-    HashMap<Integer, HashSet<Integer>> callGraph = new HashMap<>();
-    HashMap<Integer, HashSet<Integer>> confidencePairs = new HashMap<>();
+    HashMap<String, Integer> singleSupport = new HashMap<>();
+    HashMap<String, Integer> pairSupport = new HashMap<>();
+    HashMap<String, HashSet<String>> callGraph = new HashMap<>();
+    HashMap<String, HashSet<String>> confidencePairs = new HashMap<>();
 
     //  static ArrayList<String> funcs = new ArrayList<>();
-    HashMap<String, Integer> funcToID = new HashMap<>();
-    HashMap<Integer, String> iDToFunc = new HashMap<>();
+//    HashMap<String, Integer> funcToID = new HashMap<>();
+//    HashMap<Integer, String> iDToFunc = new HashMap<>();
 
     HashMap<String, String> options;
     String callGraphStartWith = "Call graph node for function:";
@@ -33,18 +33,18 @@ public class BugDetector {
             OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(Main.OUTPUT)), StandardCharsets.US_ASCII);
             BufferedWriter bw = new BufferedWriter(outputStreamWriter);
             String format = "bug: %s in %s, pair: (%s, %s), support: %d, confidence: %.2f%%%n";
-            for (Map.Entry<Integer, HashSet<Integer>> entry : callGraph.entrySet()) {
-                for (Integer calleeID : entry.getValue()) {
-                    HashSet<Integer> confidencePair = confidencePairs.getOrDefault(calleeID, null);
+            for (Map.Entry<String, HashSet<String>> entry : callGraph.entrySet()) {
+                for (String callee : entry.getValue()) {
+                    HashSet<String> confidencePair = confidencePairs.getOrDefault(callee, null);
                     if (confidencePair != null) {
-                        for (Integer pairID : confidencePair) {
-                            if (!entry.getValue().contains(pairID)) {
+                        for (String pair : confidencePair) {
+                            if (!entry.getValue().contains(pair)) {
                                 //Should appear as a pair but did not
-                                String[] pairArray = {iDToFunc.get(calleeID), iDToFunc.get(pairID)};
+                                String[] pairArray = {callee, pair};
                                 Arrays.sort(pairArray);
-                                Pair confidenceKey = new Pair(calleeID, pairID);
+                                String confidenceKey = pairArray[0] + Main.splitter + pairArray[1];
 //                System.out.printf((format) + "%n", callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey));
-                                bw.write(String.format(format, iDToFunc.get(calleeID), iDToFunc.get(entry.getKey()), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(calleeID, confidenceKey)));
+                                bw.write(String.format(format, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey)));
                             }
                         }
                     }
@@ -58,9 +58,9 @@ public class BugDetector {
 
 
     void getConfidencePairs() {
-        for (Map.Entry<Pair, Integer> pairEntry : pairSupport.entrySet()) {
-//      String[] funcPair = pairEntry.getKey().split(splitter);
-            Integer[] funcPair = {pairEntry.getKey().left, pairEntry.getKey().right};
+        for (Map.Entry<String, Integer> pairEntry : pairSupport.entrySet()) {
+            String[] funcPair = pairEntry.getKey().split(Main.splitter);
+//            Integer[] funcPair = {pairEntry.getKey().left, pairEntry.getKey().right};
             int T_CONFIDENCE = Integer.parseInt(options.get(Main.CONFIDENCE));
             int T_SUPPORT = Integer.parseInt(options.get(Main.SUPPORT));
 
@@ -81,18 +81,18 @@ public class BugDetector {
 
     }
 
-    float calculateConfidence(Integer funcID, Pair pair) {
-        int singleVal = singleSupport.get(funcID);
+    float calculateConfidence(String func, String pair) {
+        int singleVal = singleSupport.get(func);
         int pairVal = pairSupport.get(pair);
 //    float val = pairVal/singleVal;
         return pairVal * 100 / (float) singleVal;
     }
 
-    void getSupportsForOneFuncCall(HashSet<Integer> functionsCalled) {
+    void getSupportsForOneFuncCall(HashSet<String> functionsCalled) {
         if (functionsCalled == null) return;
 
         //Add support for one single function
-        for (Integer func : functionsCalled) {
+        for (String func : functionsCalled) {
             if (!singleSupport.containsKey(func)) {
                 singleSupport.put(func, 1);
             } else {
@@ -102,12 +102,13 @@ public class BugDetector {
         }
         //Add support for every pair
 
-        ArrayList<Integer> funcList = new ArrayList<>(functionsCalled);
+        ArrayList<String> funcList = new ArrayList<>(functionsCalled);
+        Collections.sort(funcList);
         for (int i = 0; i < funcList.size() - 1; i++) {
             for (int j = i + 1; j < funcList.size(); j++) {
                 //Our pair will automatically sort
-                Pair pair = new Pair(funcList.get(i), funcList.get(j));
-//        String pair = funcList.get(i) + splitter + funcList.get(j);
+//                Pair pair = new Pair(funcList.get(i), funcList.get(j));
+                String pair = funcList.get(i) + Main.splitter + funcList.get(j);
                 if (!pairSupport.containsKey(pair)) {
                     pairSupport.put(pair, 1);
                 } else {
@@ -122,11 +123,11 @@ public class BugDetector {
         try {
             InputStreamReader isr = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.US_ASCII);
             BufferedReader br = new BufferedReader(isr);
-            HashSet<Integer> functionCall = null;
+            HashSet<String> functionCall = null;
             String caller = null;
-            int callerID = 0;
-            int id = 0;
-            int funcID = id;
+//            int callerID = 0;
+//            int id = 0;
+//            int funcID = id;
             for (String line; (line = br.readLine()) != null; ) {
                 //We are trying to get the function name
                 String[] lineSplit = line.split("'");
@@ -136,16 +137,16 @@ public class BugDetector {
                 if (lineSplit.length >= 2) {
                     funcName = lineSplit[1];
 
-                    if (!funcToID.containsKey(funcName)) {
-                        funcToID.put(funcName, id);
-//            assert !iDToFunc.containsKey(id);
-                        iDToFunc.put(id, funcName);
-                        funcID = id;
-                        id++;
-                    } else {
-//            assert iDToFunc.get(id)
-                        funcID = funcToID.get(funcName);
-                    }
+//                    if (!funcToID.containsKey(funcName)) {
+//                        funcToID.put(funcName, id);
+////            assert !iDToFunc.containsKey(id);
+//                        iDToFunc.put(id, funcName);
+//                        funcID = id;
+//                        id++;
+//                    } else {
+////            assert iDToFunc.get(id)
+//                        funcID = funcToID.get(funcName);
+//                    }
                 }
 
                 if (line.startsWith(callGraphStartWith)) {
@@ -154,10 +155,10 @@ public class BugDetector {
                     //Assign caller and create the callGraph
                     if (caller != null) {
 //            ArrayList<String> callees = new ArrayList<>(functionCall);
-                        callGraph.put(callerID, functionCall);
+                        callGraph.put(caller, functionCall);
                     }
                     caller = funcName;
-                    callerID = funcID;
+//                    callerID = funcID;
 
                     //Indicates a call graph for one function.
                     functionCall = new HashSet<>();
@@ -168,7 +169,7 @@ public class BugDetector {
                 if (functionCall != null && funcName != null) {
                     //Now we should be at the first line of the function call graph
                     //The second element should always be the function name
-                    functionCall.add(funcID);
+                    functionCall.add(funcName);
                 }
             }
 
@@ -177,7 +178,7 @@ public class BugDetector {
             //Assign caller and create the callGraph
             if (caller != null) {
 //        ArrayList<String> callees = new ArrayList<>(functionCall);
-                callGraph.put(callerID, functionCall);
+                callGraph.put(caller, functionCall);
             }
             br.close();
         } catch (IOException e) {

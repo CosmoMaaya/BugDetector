@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BugDetector.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">project</a> &gt; <a href="index.source.html" class="el_package">se465</a> &gt; <span class="el_source">BugDetector.java</span></div><h1>BugDetector.java</h1><pre class="source lang-java linenums">package se465;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
+public class BugDetector {
+    //Now we try to manually give an ID to each string to increase performance
+<span class="fc" id="L9">    HashMap&lt;String, Integer&gt; singleSupport = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L10">    HashMap&lt;String, Integer&gt; pairSupport = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L11">    HashMap&lt;String, HashSet&lt;String&gt;&gt; callGraph = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L12">    HashMap&lt;String, HashSet&lt;String&gt;&gt; confidencePairs = new HashMap&lt;&gt;();</span>
+
+    //  static ArrayList&lt;String&gt; funcs = new ArrayList&lt;&gt;();
+//    HashMap&lt;String, Integer&gt; funcToID = new HashMap&lt;&gt;();
+//    HashMap&lt;Integer, String&gt; iDToFunc = new HashMap&lt;&gt;();
+
+    HashMap&lt;String, String&gt; options;
+<span class="fc" id="L19">    String callGraphStartWith = &quot;Call graph node for function:&quot;;</span>
+
+<span class="fc" id="L21">    BugDetector(HashMap&lt;String, String&gt; options) {</span>
+<span class="fc" id="L22">        this.options = options;</span>
+<span class="fc" id="L23">    }</span>
+
+    void detectAndOutput() {
+<span class="nc" id="L26">        getSupports(options.get(Main.CALLGRAPH));</span>
+<span class="nc" id="L27">        getConfidencePairs();</span>
+<span class="nc" id="L28">        inferBugs();</span>
+<span class="nc" id="L29">    }</span>
+
+    void inferBugs(){
+        try {
+<span class="nc" id="L33">            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(Main.OUTPUT)), StandardCharsets.US_ASCII);</span>
+<span class="nc" id="L34">            BufferedWriter bw = new BufferedWriter(outputStreamWriter);</span>
+<span class="nc" id="L35">            String format = &quot;bug: %s in %s, pair: (%s, %s), support: %d, confidence: %.2f%%%n&quot;;</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">            for (Map.Entry&lt;String, HashSet&lt;String&gt;&gt; entry : callGraph.entrySet()) {</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">                for (String callee : entry.getValue()) {</span>
+<span class="nc" id="L38">                    HashSet&lt;String&gt; confidencePair = confidencePairs.getOrDefault(callee, null);</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                    if (confidencePair != null) {</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">                        for (String pair : confidencePair) {</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">                            if (!entry.getValue().contains(pair)) {</span>
+                                //Should appear as a pair but did not
+<span class="nc" id="L43">                                String[] pairArray = {callee, pair};</span>
+<span class="nc" id="L44">                                Arrays.sort(pairArray);</span>
+<span class="nc" id="L45">                                String confidenceKey = pairArray[0] + Main.splitter + pairArray[1];</span>
+//                System.out.printf((format) + &quot;%n&quot;, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey));
+<span class="nc" id="L47">                                bw.write(String.format(format, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey)));</span>
+                            }
+<span class="nc" id="L49">                        }</span>
+                    }
+<span class="nc" id="L51">                }</span>
+<span class="nc" id="L52">            }</span>
+<span class="nc" id="L53">            bw.close();</span>
+<span class="nc" id="L54">        } catch (IOException e) {</span>
+<span class="nc" id="L55">            e.printStackTrace();</span>
+<span class="nc" id="L56">        }</span>
+<span class="nc" id="L57">    }</span>
+
+
+    void getConfidencePairs() {
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (Map.Entry&lt;String, Integer&gt; pairEntry : pairSupport.entrySet()) {</span>
+<span class="nc" id="L62">            String[] funcPair = pairEntry.getKey().split(Main.splitter);</span>
+//            Integer[] funcPair = {pairEntry.getKey().left, pairEntry.getKey().right};
+<span class="nc" id="L64">            int T_CONFIDENCE = Integer.parseInt(options.get(Main.CONFIDENCE));</span>
+<span class="nc" id="L65">            int T_SUPPORT = Integer.parseInt(options.get(Main.SUPPORT));</span>
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            for (int i = 0; i &lt; 2; i++) {</span>
+//        System.out.println(&quot;func pair: &quot; + funcPair[0] + &quot;, &quot; + funcPair[1] + &quot; with cal confidence: &quot; + calculateConfidence(funcPair[i], pairEntry.getKey()) );
+<span class="nc bnc" id="L69" title="All 4 branches missed.">                if (pairSupport.get(pairEntry.getKey()) &gt;= T_SUPPORT &amp;&amp; calculateConfidence(funcPair[i], pairEntry.getKey()) &gt;= T_CONFIDENCE) {</span>
+                    //Only print bugs with confidence T_CONFIDENCE or more and with pair support T_SUPPORT times or more
+                    //We confirm that func must always appear as a pair
+
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                    if (!confidencePairs.containsKey(funcPair[i])) {</span>
+<span class="nc" id="L74">                        confidencePairs.put(funcPair[i], new HashSet&lt;&gt;());</span>
+                    }
+
+<span class="nc" id="L77">                    confidencePairs.get(funcPair[i]).add(funcPair[1 - i]);</span>
+                }
+            }
+<span class="nc" id="L80">        }</span>
+
+<span class="nc" id="L82">    }</span>
+
+    float calculateConfidence(String func, String pair) {
+<span class="nc" id="L85">        int singleVal = singleSupport.get(func);</span>
+<span class="nc" id="L86">        int pairVal = pairSupport.get(pair);</span>
+//    float val = pairVal/singleVal;
+<span class="nc" id="L88">        return pairVal * 100 / (float) singleVal;</span>
+    }
+
+    void getSupportsForOneFuncCall(HashSet&lt;String&gt; functionsCalled) {
+<span class="fc bfc" id="L92" title="All 2 branches covered.">        if (functionsCalled == null) return;</span>
+
+        //Add support for one single function
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (String func : functionsCalled) {</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (!singleSupport.containsKey(func)) {</span>
+<span class="fc" id="L97">                singleSupport.put(func, 1);</span>
+            } else {
+<span class="fc" id="L99">                int val = singleSupport.get(func);</span>
+<span class="fc" id="L100">                singleSupport.put(func, val + 1);</span>
+            }
+<span class="fc" id="L102">        }</span>
+        //Add support for every pair
+
+<span class="fc" id="L105">        ArrayList&lt;String&gt; funcList = new ArrayList&lt;&gt;(functionsCalled);</span>
+<span class="fc" id="L106">        Collections.sort(funcList);</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (int i = 0; i &lt; funcList.size() - 1; i++) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            for (int j = i + 1; j &lt; funcList.size(); j++) {</span>
+                //Our pair will automatically sort
+//                Pair pair = new Pair(funcList.get(i), funcList.get(j));
+<span class="fc" id="L111">                String pair = funcList.get(i) + Main.splitter + funcList.get(j);</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                if (!pairSupport.containsKey(pair)) {</span>
+<span class="fc" id="L113">                    pairSupport.put(pair, 1);</span>
+                } else {
+<span class="fc" id="L115">                    int val = pairSupport.get(pair);</span>
+<span class="fc" id="L116">                    pairSupport.put(pair, val + 1);</span>
+                }
+            }
+        }
+<span class="fc" id="L120">    }</span>
+
+    void getSupports(String fileName) {
+        try {
+<span class="fc" id="L124">            InputStreamReader isr = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.US_ASCII);</span>
+<span class="fc" id="L125">            BufferedReader br = new BufferedReader(isr);</span>
+<span class="fc" id="L126">            HashSet&lt;String&gt; functionCall = null;</span>
+<span class="fc" id="L127">            String caller = null;</span>
+//            int callerID = 0;
+//            int id = 0;
+//            int funcID = id;
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            for (String line; (line = br.readLine()) != null; ) {</span>
+                //We are trying to get the function name
+<span class="fc" id="L133">                String[] lineSplit = line.split(&quot;'&quot;);</span>
+                //The second element should always be the function name
+<span class="fc" id="L135">                String funcName = null;</span>
+
+<span class="fc bfc" id="L137" title="All 2 branches covered.">                if (lineSplit.length &gt;= 2) {</span>
+<span class="fc" id="L138">                    funcName = lineSplit[1];</span>
+
+//                    if (!funcToID.containsKey(funcName)) {
+//                        funcToID.put(funcName, id);
+////            assert !iDToFunc.containsKey(id);
+//                        iDToFunc.put(id, funcName);
+//                        funcID = id;
+//                        id++;
+//                    } else {
+////            assert iDToFunc.get(id)
+//                        funcID = funcToID.get(funcName);
+//                    }
+                }
+
+<span class="fc bfc" id="L152" title="All 2 branches covered.">                if (line.startsWith(callGraphStartWith)) {</span>
+                    //Process the previous function call
+<span class="fc" id="L154">                    getSupportsForOneFuncCall(functionCall);</span>
+                    //Assign caller and create the callGraph
+<span class="fc bfc" id="L156" title="All 2 branches covered.">                    if (caller != null) {</span>
+//            ArrayList&lt;String&gt; callees = new ArrayList&lt;&gt;(functionCall);
+<span class="fc" id="L158">                        callGraph.put(caller, functionCall);</span>
+                    }
+<span class="fc" id="L160">                    caller = funcName;</span>
+//                    callerID = funcID;
+
+                    //Indicates a call graph for one function.
+<span class="fc" id="L164">                    functionCall = new HashSet&lt;&gt;();</span>
+
+<span class="fc" id="L166">                    continue;</span>
+                }
+
+<span class="fc bfc" id="L169" title="All 4 branches covered.">                if (functionCall != null &amp;&amp; funcName != null) {</span>
+                    //Now we should be at the first line of the function call graph
+                    //The second element should always be the function name
+<span class="fc" id="L172">                    functionCall.add(funcName);</span>
+                }
+<span class="fc" id="L174">            }</span>
+
+            //Last function call not captured by the for loop
+<span class="fc" id="L177">            getSupportsForOneFuncCall(functionCall);</span>
+            //Assign caller and create the callGraph
+<span class="pc bpc" id="L179" title="1 of 2 branches missed.">            if (caller != null) {</span>
+//        ArrayList&lt;String&gt; callees = new ArrayList&lt;&gt;(functionCall);
+<span class="fc" id="L181">                callGraph.put(caller, functionCall);</span>
+            }
+<span class="fc" id="L183">            br.close();</span>
+<span class="nc" id="L184">        } catch (IOException e) {</span>
+<span class="nc" id="L185">            e.printStackTrace();</span>
+<span class="fc" id="L186">        }</span>
+<span class="fc" id="L187">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.5.201910111838</span></div></body></html>
