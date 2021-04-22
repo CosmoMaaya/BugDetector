@@ -7,7 +7,7 @@
 \pagestyle{empty}
 
 \title{SE465 -- Course Project}
-\author{$\langle$Your Name$\rangle$ --- $\langle$Your Student ID$\rangle$ --- $\langle$Your Email$\rangle$}
+\author{$\langle$Yusu Zhao$\rangle$ --- $\langle$20761282$\rangle$ --- $\langle$y555zhao@uwaterloo.ca$\rangle$}
 \date{}
 
 \begin{document}
@@ -21,16 +21,8 @@ My line coverage from Jacoco is as follows.
 \includegraphics[width=1\textwidth]{jacoco-coverage.png} %插入图片，[]中设置图片大小，{}中是图片文件名
 \end{figure}
 
-There are several lines in BugDetector that are not covered. That is because it is a try-catch block to catch any possible I/O exceptions when reading from the provided callgraph file. Currently I do not know how to actively created such exception other than made the file unreadable by remove the read permission. However, doing that will not allow me to package that file together (because of no permission). 
+Although I've achieved 100\% line coverage, there is one thing that I want to address. I tested on some try-catch block to catch when there is an I/O exception when the program read or write a file. The test is done based on an actual file, and by massage the permission on it. If my program does not have the permission to modify the permission of the files, then those related tests might fail. 
 
-In Main, although it shows that it's not 100\% covered, the report did not show any line that is not covered. In fact, when I go to the pit-test report, it says that I've reached 100\% line coverage for my Main class. Therefore, I will assume that is some brackets lines or some other lines that are not actual codes. As a support, here is the report from pit-test:
-
-\begin{figure}[H] %H为当前位置，!htb为忽略美学标准，htbp为浮动图形
-\centering %图片居中
-\includegraphics[width=0.7\textwidth]{pittest-coverage.png} %插入图片，[]中设置图片大小，{}中是图片文件名
-\end{figure}
-
-\newpage
 \subsection*{(c)}
 
 Generally speaking, I did not get much bugs when I use these two tools. 
@@ -51,7 +43,7 @@ From spotbugs, I got:
 
 And all of them are real bugs or code smells, although they are pretty tiny issues. For pmd ones, I simply removed those unused imports, and re-write my logic expression in one if statement. I would doubt the useless parentheses one, since in my own opinion, those parentheses will help code readers to understand the logic expression better and quicker. Maybe pmd should be more loose about parentheses checks.
 
-For spotbugs ones, I added default encoding UTF-8 in each read and write stream, casted integer to floating numbers before doing division, added close clause to close file streams, and change new-line character slash n (\\n) to percent n (\%n). I would say these reports are pretty useful. For example, the ICAST\_IDIV\_CAST\_TO\_DOUBLE is a but that is easy to be ignored. Our support numbers are all integers, but we are doing a division to get a percentage, which means I will get a huge difference if I directly divide these two numbers which will results in an integer division. And since it is an error that is so tiny that I might will need to spend hours to figure that out. So this tool indeed helped me a lot. However, there are some reports that I do not really understand if it will have an extra effect. The VA\_FORMAT\_STRING\_USES\_NEWLINE one, according to their official documentation, they said that ``it is generally preferable better to use \%n, which will produce the platform-specific line separator.''. I will say it is very good to know this, but to be honest I do not know if this is generally true. 
+For spotbugs ones, I added default encoding UTF-8 in each read and write stream, casted integer to floating numbers before doing division, added close clause to close file streams, and change new-line character slash n (\textbackslash n) to percent n (\%n). I would say these reports are pretty useful. For example, the ICAST\_IDIV\_CAST\_TO\_DOUBLE is a but that is easy to be ignored. Our support numbers are all integers, but we are doing a division to get a percentage, which means I will get a huge difference if I directly divide these two numbers which will results in an integer division. And since it is an error that is so tiny that I might will need to spend hours to figure that out. So this tool indeed helped me a lot. However, there are some reports that I do not really understand if it will have an extra effect. The VA\_FORMAT\_STRING\_USES\_NEWLINE one, according to their official documentation, they said that ``it is generally preferable better to use \%n, which will produce the platform-specific line separator.''. I will say it is very good to know this, but to be honest I do not know if this is generally true. 
 
 One last thing I want to mention is that spotbugs have a very good code documentation that I can quickly figure out the exact bug and relavent explanation from the error code. 
 

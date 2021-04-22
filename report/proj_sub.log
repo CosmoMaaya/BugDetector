@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.4.5)  22 APR 2021 17:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.4.5)  22 APR 2021 17:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -167,60 +167,57 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <14.4> on input line 15.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line 15.
-<jacoco-coverage.png, id=1, 950.55125pt x 98.3675pt>
+<jacoco-coverage.png, id=1, 977.6525pt x 165.61874pt>
 File: jacoco-coverage.png Graphic file (type png)
 <use jacoco-coverage.png>
 Package pdftex.def Info: jacoco-coverage.png  used on input line 21.
-(pdftex.def)             Requested size: 542.02501pt x 56.09406pt.
-<pittest-coverage.png, id=3, 524.96124pt x 368.37625pt>
-File: pittest-coverage.png Graphic file (type png)
-<use pittest-coverage.png>
-Package pdftex.def Info: pittest-coverage.png  used on input line 30.
-(pdftex.def)             Requested size: 379.41585pt x 266.2537pt.
+(pdftex.def)             Requested size: 542.02501pt x 91.82346pt.
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 4
+6.
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 46.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} </home/yurikaendou/Document
-s/SE465/projec/proj_skeleton/report/jacoco-coverage.png> </home/yurikaendou/Doc
-uments/SE465/projec/proj_skeleton/report/pittest-coverage.png>]
-Overfull \hbox (51.54913pt too wide) in paragraph at lines 54--55
-\OT1/cmr/m/n/12 n) to per-cent n (%n). I would say these re-ports are pretty us
-e-ful. For ex-am-ple, the ICAST[]IDIV[]CAST[]TO[]DOUBLE
- []
-
+s/SE465/projec/proj_skeleton/report/jacoco-coverage.png>]
+<pittest-coverage.png, id=14, 538.01pt x 385.44pt>
 File: pittest-coverage.png Graphic file (type png)
 <use pittest-coverage.png>
-Package pdftex.def Info: pittest-coverage.png  used on input line 63.
-(pdftex.def)             Requested size: 379.41585pt x 266.2537pt.
-[2]
-<mutation1.png, id=19, 860.21375pt x 128.48pt>
+Package pdftex.def Info: pittest-coverage.png  used on input line 55.
+(pdftex.def)             Requested size: 379.41585pt x 271.82346pt.
+<mutation1.png, id=15, 806.01125pt x 151.56625pt>
 File: mutation1.png Graphic file (type png)
 <use mutation1.png>
-Package pdftex.def Info: mutation1.png  used on input line 70.
-(pdftex.def)             Requested size: 542.02501pt x 80.95654pt.
-<mutation2.png, id=20, 782.925pt x 165.61874pt>
+Package pdftex.def Info: mutation1.png  used on input line 62.
+(pdftex.def)             Requested size: 542.02501pt x 101.92583pt.
+<mutation2.png, id=16, 782.925pt x 165.61874pt>
 File: mutation2.png Graphic file (type png)
 <use mutation2.png>
-Package pdftex.def Info: mutation2.png  used on input line 78.
+Package pdftex.def Info: mutation2.png  used on input line 70.
 (pdftex.def)             Requested size: 542.02501pt x 114.6637pt.
-[3 </home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/mutation1.png
-> </home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/mutation2.png>
-] (/home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/proj_sub.aux) 
-) 
+[2 </home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-cover
+age.png> </home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/mutatio
+n1.png>] [3 </home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/muta
+tion2.png>] (/home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/proj
+_sub.aux) ) 
 Here is how much of TeX's memory you used:
- 1981 strings out of 483183
- 29133 string characters out of 5966293
- 265168 words of memory out of 5000000
- 17009 multiletter control sequences out of 15000+600000
- 534492 words of font info for 31 fonts, out of 8000000 for 9000
+ 2000 strings out of 483183
+ 29452 string characters out of 5966293
+ 266172 words of memory out of 5000000
+ 17025 multiletter control sequences out of 15000+600000
+ 534749 words of font info for 32 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 30i,7n,33p,1220b,217s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/yurikaendou/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm120
-0.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr
-/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/
-texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+ 30i,7n,33p,1288b,217s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/yurikaendou/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/
+ec/tcrm1200.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
 Output written on /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report
-/proj_sub.pdf (3 pages, 143137 bytes).
+/proj_sub.pdf (3 pages, 150467 bytes).
 PDF statistics:
  44 PDF objects out of 1000 (max. 8388607)
  25 compressed objects within 1 object stream

@@ -57,11 +57,12 @@ INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/jacoco-cover
 INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/jacoco-coverage.png
 OUTPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/proj_sub.pdf
 INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/jacoco-coverage.png
-INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
-INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
-INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
-INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm
+INPUT /usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+INPUT /usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm
+INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
+INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
 INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
 INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/pittest-coverage.png
 INPUT /home/yurikaendou/Documents/SE465/projec/proj_skeleton/report/mutation1.png
