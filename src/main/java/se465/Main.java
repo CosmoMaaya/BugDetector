@@ -12,10 +12,12 @@ public class Main {
   static String funcCallStartWith = "CS<0x";
   static String splitter = " ";
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args){
     options = commandParser(args);
     BugDetector detector = new BugDetector(options);
-    detector.detectAndOutput();
+    detector.getSupports(options.get(Main.CALLGRAPH));
+    detector.getConfidencePairs();
+    detector.inferBugs();
   }
 
   static HashMap<String, String> commandParser(String[] args) {

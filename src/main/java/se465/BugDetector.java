@@ -22,15 +22,9 @@ public class BugDetector {
         this.options = options;
     }
 
-    void detectAndOutput() {
-        getSupports(options.get(Main.CALLGRAPH));
-        getConfidencePairs();
-        inferBugs();
-    }
-
     void inferBugs(){
         try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(Main.OUTPUT)), StandardCharsets.US_ASCII);
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(options.get(Main.OUTPUT)), StandardCharsets.UTF_8);
             BufferedWriter bw = new BufferedWriter(outputStreamWriter);
             String format = "bug: %s in %s, pair: (%s, %s), support: %d, confidence: %.2f%%%n";
             for (Map.Entry<String, HashSet<String>> entry : callGraph.entrySet()) {
@@ -43,7 +37,7 @@ public class BugDetector {
                                 String[] pairArray = {callee, pair};
                                 Arrays.sort(pairArray);
                                 String confidenceKey = pairArray[0] + Main.splitter + pairArray[1];
-//                System.out.printf((format) + "%n", callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey));
+//                                System.out.printf((format) + "%n", callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey));
                                 bw.write(String.format(format, callee, entry.getKey(), pairArray[0], pairArray[1], pairSupport.get(confidenceKey), calculateConfidence(callee, confidenceKey)));
                             }
                         }
@@ -52,7 +46,7 @@ public class BugDetector {
             }
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("invalid value");
         }
     }
 
@@ -82,8 +76,10 @@ public class BugDetector {
     }
 
     float calculateConfidence(String func, String pair) {
-        int singleVal = singleSupport.get(func);
-        int pairVal = pairSupport.get(pair);
+        int singleVal = singleSupport.getOrDefault(func, -1);
+        int pairVal = pairSupport.getOrDefault(pair, -1);
+
+        if (singleVal == -1 || pairVal == -1) return -1;
 //    float val = pairVal/singleVal;
         return pairVal * 100 / (float) singleVal;
     }
@@ -117,11 +113,15 @@ public class BugDetector {
                 }
             }
         }
+
+//        for (Map.Entry<String, Integer> entry: pairSupport.entrySet()){
+//            System.out.println("'" + entry.getKey() + "' with value: " + entry.getValue());
+//        }
     }
 
     void getSupports(String fileName) {
         try {
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.US_ASCII);
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
             HashSet<String> functionCall = null;
             String caller = null;
@@ -182,7 +182,7 @@ public class BugDetector {
             }
             br.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException("invalid value");
         }
     }
 

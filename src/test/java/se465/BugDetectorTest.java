@@ -4,9 +4,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 public class BugDetectorTest {
 
@@ -17,81 +18,200 @@ public class BugDetectorTest {
     public void setUp(){
         options = new HashMap<>();
         options.put(Main.SUPPORT, "3");
-        options.put(Main.CONFIDENCE, "65");
-        options.put(Main.OUTPUT, "a.out");
+        options.put(Main.CONFIDENCE, "75");
+        options.put(Main.OUTPUT, "src/input/sample.out");
         options.put(Main.CALLGRAPH, "src/input/testCallGraph.txt");
 
         bugDetector = new BugDetector(options);
     }
 
     @Test
-    public void testGetSupportForOneFunctionCall(){
-        HashSet<Integer> set = new HashSet<Integer>() {
-            {add(2); add(3); add(4); add(5);}
+    public void testInferBugs(){
+        HashMap<String, Integer> pair = new HashMap<String, Integer>() {
+            {
+                put("A B", 3);
+                put("B C", 3);
+            }
         };
 
-//        bugDetector.getSupportsForOneFuncCall(set);
-//
-//        for (int i = 2; i <= 5; i++){
-//            int support = bugDetector.singleSupport.get(i);
-//            Assert.assertEquals(support, 1);
-//        }
-//
-//        for (int i = 2; i <= 4; i++){
-//            for (int j = i + 1; j <= 5; j++){
-//                Pair pair = new Pair(i, j);
-//                int support = bugDetector.pairSupport.get(pair);
-//                Assert.assertEquals();
-//            }
-//        }
+        HashMap<String, Integer> single = new HashMap<String, Integer>(){
+            {
+                put("A", 10);
+                put("B", 4);
+                put("C", 10);
+            }
+        };
 
+        HashMap<String, HashSet<String>> callGraph = new HashMap<String, HashSet<String>>(){
+            {
+                put("scope1", new HashSet<String>() {
+                    {add("B");}
+                });
+            }
+        };
+
+        HashMap<String, HashSet<String>> confidencePairs = new HashMap<String, HashSet<String>>() {
+            {
+                put("B", new HashSet<String>() {
+                    {
+                        add("A"); add("C");
+                    }
+                });
+            }
+        };
+
+        bugDetector.pairSupport = pair;
+        bugDetector.singleSupport = single;
+        bugDetector.confidencePairs = confidencePairs;
+        bugDetector.callGraph = callGraph;
+
+        bugDetector.inferBugs();
+        HashSet<String> lines = new HashSet<>();
+
+        try {
+            InputStreamReader isr = new InputStreamReader(new FileInputStream(options.get(Main.OUTPUT)), StandardCharsets.US_ASCII);
+            BufferedReader br = new BufferedReader(isr);
+
+//            String line = br.readLine();
+            for (String line; (line = br.readLine()) != null; ) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        HashSet<String> expectedLines = new HashSet<String>(){
+            {
+                add("bug: B in scope1, pair: (A, B), support: 3, confidence: 75.00%");
+                add("bug: B in scope1, pair: (B, C), support: 3, confidence: 75.00%");
+            }
+        };
+
+        Assert.assertEquals(expectedLines, lines);
+    }
+
+    @Test
+    public void testGetConfidencePairs(){
+        HashMap<String, Integer> pair = new HashMap<String, Integer>() {
+            {
+                put("A B", 3);
+                put("B C", 3);
+            }
+        };
+
+        HashMap<String, Integer> single = new HashMap<String, Integer>(){
+            {
+                put("A", 10);
+                put("B", 4);
+                put("C", 10);
+            }
+        };
+
+        bugDetector.pairSupport = pair;
+        bugDetector.singleSupport = single;
+
+        bugDetector.getConfidencePairs();
+
+        HashMap<String, HashSet<String>> ans = new HashMap<String, HashSet<String>>() {
+            {
+                put("B", new HashSet<String>() {
+                    {
+                        add("A"); add("C");
+                    }
+                });
+            }
+        };
+
+        Assert.assertEquals(ans, bugDetector.confidencePairs);
+    }
+
+    @Test
+    public void testCalculateConfidence(){
+        HashMap<String, Integer> pair = new HashMap<String, Integer>() {
+            {
+                put("A B", 20);
+            }
+        };
+
+        HashMap<String, Integer> single = new HashMap<String, Integer>(){
+            {
+                put("A", 25);
+            }
+        };
+
+        bugDetector.pairSupport = pair;
+        bugDetector.singleSupport = single;
+        Assert.assertEquals(80, bugDetector.calculateConfidence("A", "A B"), 0.01);
+        Assert.assertEquals(-1, bugDetector.calculateConfidence("B", "A aB"), 0.01);
+    }
+
+    @Test
+    public void testGetSupportForOneFunctionCall(){
+        HashSet<String> set = new HashSet<String>() {
+            {add("UchidaMaaya"); add("SakuraAyane"); add("MinaseInori");}
+        };
+        bugDetector.getSupportsForOneFuncCall(set);
+
+        HashMap<String, Integer> single = new HashMap<String, Integer>() {
+            {
+                put("UchidaMaaya", 1);put("SakuraAyane", 1);put("MinaseInori", 1);
+            }
+        };
+        HashMap<String, Integer> pair = new HashMap<String, Integer>() {
+            {
+                put("SakuraAyane UchidaMaaya", 1);put("MinaseInori UchidaMaaya", 1);put("MinaseInori SakuraAyane", 1);
+            }
+        };
+        Assert.assertEquals(single, bugDetector.singleSupport);
+        Assert.assertEquals(pair, bugDetector.pairSupport);
+        set = new HashSet<String>() {
+            {add("UchidaMaaya"); add("MinaseInori");}
+        };
+        bugDetector.getSupportsForOneFuncCall(set);
+
+        single.put("UchidaMaaya", 2);
+        single.put("MinaseInori", 2);
+        pair.put("MinaseInori UchidaMaaya", 2);
+        Assert.assertEquals(single, bugDetector.singleSupport);
+        Assert.assertEquals(pair, bugDetector.pairSupport);
     }
 
     @Test
     public void testGetSupports(){
         bugDetector.getSupports(options.get(Main.CALLGRAPH));
 
-//        HashMap<String, Integer> funcToID = bugDetector.funcToID;
-//        HashMap<Integer, String> IDToFunc= bugDetector.iDToFunc;
-//
-//        Assert.assertEquals(funcToID.size(), IDToFunc.size());
-//
-//        //Func to ID
-//        int id = funcToID.get("scope1");
-//        Assert.assertEquals(id, 0);
-//        id = funcToID.get("scope2");
-//        Assert.assertEquals(id, 1);
-//        id = funcToID.get("A");
-//        Assert.assertEquals(id, 2);
-//        id = funcToID.get("B");
-//        Assert.assertEquals(id, 3);
-//        id = funcToID.get("C");
-//        Assert.assertEquals(id, 4);
-//        id = funcToID.get("D");
-//        Assert.assertEquals(id, 5);
-//
-//        for (Map.Entry<String, Integer> entry: funcToID.entrySet()){
-//            id = entry.getValue();
-//            String func = IDToFunc.get(id);
-//            Assert.assertEquals(func, entry.getKey());
-//        }
-//
-//        //Call Graph:
-//        HashSet<Integer> set = new HashSet<Integer>() {
-//            //A,B,C,D
-//            {add(2); add(3); add(4); add(5);}
-//        };
-//        Assert.assertEquals(set, bugDetector.callGraph.get(0));
-//        set = new HashSet<Integer>() {
-//            //A,C,D
-//            {add(2); add(4); add(5);}
-//        };
-//        Assert.assertEquals(set, bugDetector.callGraph.get(1));
-//
-//        Assert.assertNull(bugDetector.callGraph.get(2));
-//        Assert.assertNull(bugDetector.callGraph.get(3));
-//        Assert.assertNull(bugDetector.callGraph.get(4));
-//        Assert.assertNull(bugDetector.callGraph.get(5));
+        //Call Graph:
+        HashMap<String, HashSet<String>> ans = new HashMap<String, HashSet<String>>() {
+            {
+                put("scope1", new HashSet<String>(){
+                    {add("A"); add("B"); add("C"); add("D");}
+                });
 
+                put("scope2", new HashSet<String>(){
+                    {add("A"); add("C"); add("D");}
+                });
+            }
+        };
+
+        HashMap<String, Integer> singleSupport = new HashMap<String, Integer>() {
+            {
+                put("A", 2); put("B", 1); put("C", 2); put("D", 2);
+            }
+        };
+
+        Assert.assertEquals(ans, bugDetector.callGraph);
+        Assert.assertEquals(singleSupport, bugDetector.singleSupport);
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetSupportsException(){
+        bugDetector.getSupports("src/input/non-writable-output");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInferBugException(){
+        bugDetector.options.put(Main.OUTPUT, "src/input/non-writable-output");
+        bugDetector.inferBugs();
     }
 }
