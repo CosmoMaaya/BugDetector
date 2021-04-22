@@ -53,10 +53,11 @@
         <configuration>
           <targetClasses>
             <param>se465.Main</param>
-            <param>se465.Pair</param>
+            <param>se465.BugDetector</param>
           </targetClasses>
           <targetTests>
             <param>se465.MainTest</param>
+            <param>se465.BugDetectorTest</param>
           </targetTests>
         </configuration>
       </plugin>

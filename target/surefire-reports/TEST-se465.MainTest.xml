@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="10" failures="0" name="se465.MainTest" time="0" errors="0" skipped="0">
+<testsuite tests="13" failures="0" name="se465.MainTest" time="0.002" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="java.vm.version" value="11.0.10+9-Ubuntu-0ubuntu1.20.04"/>
@@ -62,13 +62,16 @@
     <property name="sun.cpu.isalist" value=""/>
   </properties>
   <testcase classname="se465.MainTest" name="testCommandParserMissingFlag" time="0"/>
-  <testcase classname="se465.MainTest" name="testCommandParserNegativeSupportValue" time="0"/>
+  <testcase classname="se465.MainTest" name="testMain" time="0.001"/>
   <testcase classname="se465.MainTest" name="testCommandParserDirectoryOutput" time="0"/>
+  <testcase classname="se465.MainTest" name="testCommandParserInvalidInput" time="0.001"/>
   <testcase classname="se465.MainTest" name="testCommandParserWrongSupportValue" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserTrue" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserWrongConfidenceValue" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserNonExistingCallgraph" time="0"/>
+  <testcase classname="se465.MainTest" name="testCommandParserNonPositiveSupportValue" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserDuplicateFlag" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserInvalidConfidenceValue" time="0"/>
   <testcase classname="se465.MainTest" name="testCommandParserErrorFlag" time="0"/>
+  <testcase classname="se465.MainTest" name="testCommandParserNonWritable" time="0"/>
 </testsuite>

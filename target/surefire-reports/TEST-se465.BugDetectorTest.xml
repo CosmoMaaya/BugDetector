@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="2" failures="0" name="se465.BugDetectorTest" time="0.006" errors="0" skipped="0">
+<testsuite tests="6" failures="0" name="se465.BugDetectorTest" time="0.013" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="java.vm.version" value="11.0.10+9-Ubuntu-0ubuntu1.20.04"/>
@@ -61,6 +61,10 @@
     <property name="sun.desktop" value="gnome"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="se465.BugDetectorTest" name="testGetSupports" time="0.006"/>
+  <testcase classname="se465.BugDetectorTest" name="testGetConfidencePairs" time="0.006"/>
+  <testcase classname="se465.BugDetectorTest" name="testInferBugException" time="0"/>
+  <testcase classname="se465.BugDetectorTest" name="testGetSupports" time="0.002"/>
+  <testcase classname="se465.BugDetectorTest" name="testInferBugs" time="0.005"/>
   <testcase classname="se465.BugDetectorTest" name="testGetSupportForOneFunctionCall" time="0"/>
+  <testcase classname="se465.BugDetectorTest" name="testCalculateConfidence" time="0"/>
 </testsuite>

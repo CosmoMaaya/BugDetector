@@ -101,10 +101,11 @@ public class BugDetector {
         ArrayList<String> funcList = new ArrayList<>(functionsCalled);
         Collections.sort(funcList);
         for (int i = 0; i < funcList.size() - 1; i++) {
+            String first = funcList.get(i);
             for (int j = i + 1; j < funcList.size(); j++) {
                 //Our pair will automatically sort
 //                Pair pair = new Pair(funcList.get(i), funcList.get(j));
-                String pair = funcList.get(i) + Main.splitter + funcList.get(j);
+                String pair = first + Main.splitter + funcList.get(j);
                 if (!pairSupport.containsKey(pair)) {
                     pairSupport.put(pair, 1);
                 } else {

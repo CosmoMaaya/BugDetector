@@ -66,6 +66,12 @@ public class MainTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
+  public void testCommandParserInvalidInput() {
+    String[] commands = new String[] {"--unspported"};
+    Main.commandParser(commands);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
   public void testCommandParserDuplicateFlag() {
     String[] commands = new String[] {"--confidence", "20", "--confidence", "4"};
     Main.commandParser(commands);
