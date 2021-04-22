@@ -1,5 +1,6 @@
 package se465;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +27,17 @@ public class MainTest {
     OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream("src/input/sample.out"), StandardCharsets.UTF_8);
     BufferedWriter bw = new BufferedWriter(outputStreamWriter);
     bw.close();
+
+    File NonReadable = new File("src/input/non-writable-output");
+    NonReadable.setReadable(false);
+    NonReadable.setWritable(false);
+  }
+
+  @After
+  public void cleanup() {
+    File NonReadable = new File("src/input/non-writable-output");
+    NonReadable.setReadable(true);
+    NonReadable.setWritable(true);
   }
 
 
